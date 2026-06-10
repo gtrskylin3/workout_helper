@@ -16,6 +16,7 @@ document.addEventListener('alpine:init', () => {
         isResting: false,
         restTime: 0,
         nextExerciseName: '',
+        currentExerciseGifUrl: null,
 
         async init() {
             this.workouts = await Workout.load();
@@ -40,12 +41,18 @@ document.addEventListener('alpine:init', () => {
             return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         },
 
+        // This function is now synchronous.
+        updateExerciseGif() {
+            this.currentExerciseGifUrl = ExerciseDB.getExerciseGifUrl();
+        },
+
         startWorkout(workoutName) {
             this.currentWorkout = workoutName === 'A' ? 'workoutA' : 'workoutB';
             this.currentExerciseIndex = 0;
             this.currentSet = 1;
             this.workoutStartTime = new Date();
             this.screen = 'workout';
+            this.updateExerciseGif();
         },
 
         finishSet() {
@@ -62,6 +69,7 @@ document.addEventListener('alpine:init', () => {
                 this.currentExerciseIndex++;
                 this.currentSet = 1;
                 this.nextExerciseName = `Следующее упражнение: ${this.currentExercise.name}`;
+                this.updateExerciseGif();
             } else {
                 // Move to next set
                 this.currentSet++;
