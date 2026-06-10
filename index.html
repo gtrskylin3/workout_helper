@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Helper</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+</head>
+<body x-data="app" x-init="init">
+    <div class="container">
+        <template x-if="screen === 'home'">
+            <div class="card">
+                <h1>Workout Helper</h1>
+                <div>
+                    <p>🔥 Стрик: <span x-text="stats.streak"></span> дней</p>
+                    <p>Последняя тренировка: <span x-text="stats.lastWorkout || 'Нет данных'"></span></p>
+                    <p>Всего тренировок: <span x-text="stats.totalWorkouts"></span></p>
+                </div>
+                <div>
+                    <button @click="startWorkout('A')">Тренировка А</button>
+                    <button @click="startWorkout('B')">Тренировка B</button>
+                    <button @click="showHistory()">История</button>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="screen === 'workout'">
+            <div>
+                <div x-show="!isResting" class="card">
+                    <h2 x-text="currentWorkout === 'workoutA' ? 'Тренировка А' : 'Тренировка B'"></h2>
+
+                    <div>
+                        <p>Прогресс: <span x-text="workoutProgress"></span>%</p>
+                        <p>Упражнение <span x-text="currentExerciseIndex + 1"></span> из <span x-text="workouts[currentWorkout].length"></span></p>
+                    </div>
+
+                    <div x-show="currentExercise">
+                        <h3 x-text="currentExercise.name"></h3>
+                        <p>Подход <span x-text="currentSet"></span> из <span x-text="currentExercise.sets"></span></p>
+                        <p>Повторы: <span x-text="currentExercise.reps"></span></p>
+
+                        <template x-if="currentExercise.tips && currentExercise.tips.length > 0">
+                            <ul>
+                                <template x-for="tip in currentExercise.tips">
+                                    <li x-text="tip"></li>
+                                </template>
+                            </ul>
+                        </template>
+
+                        <button @click="finishSet()">Закончил подход</button>
+                    </div>
+                </div>
+
+                <div x-show="isResting" class="card">
+                    <h2>Отдых</h2>
+                    <p x-text="formatTime(restTime)"></p>
+                    <p x-text="nextExerciseName"></p>
+                    <button @click="skipRest()">Пропустить</button>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="screen === 'history'">
+            <div class="card">
+                <h2>История</h2>
+                <button @click="goHome()">Назад</button>
+                <template x-if="history.length > 0">
+                    <ul>
+                        <template x-for="item in history">
+                            <li>
+                                <p><span x-text="item.date"></span></p>
+                                <p>Тренировка <span x-text="item.workout"></span></p>
+                                <p><span x-text="item.duration"></span> мин</p>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template x-if="history.length === 0">
+                    <p>Нет записей</p>
+                </template>
+            </div>
+        </template>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="js/storage.js"></script>
+    <script src="js/streak.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/workout.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
